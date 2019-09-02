@@ -60,7 +60,7 @@ RUN sed -i "/db\.default\.password=.*/c\db\.default\.password=\"${MYSQL_PASSWORD
 RUN sed -i "/db\.default\.url=.*/c\db\.default\.url=\"${FEMR_DB_CONNECTION_STRING}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
 
 #Set Application Secret
-RUN sed -i "/play\.http\.secret\.key=.*/c\play\.http\.secret\.key=\"${FEMR_SECRET_KEY}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+# RUN sed -i "/play\.http\.secret\.key=.*/c\play\.http\.secret\.key=\"${FEMR_SECRET_KEY}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
 
 #This will not support the internet connection functionality. Just make sure just in case it is set to yes
 RUN sed -i "/internetconnection.enableInternetConnectivityFunctionality.*/c\internetconnection.enableInternetConnectivityFunctionality = \"false\"" femr/conf/application.conf
