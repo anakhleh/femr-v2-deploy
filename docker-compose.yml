@@ -3,13 +3,25 @@
 #docker rmi $(docker images -q)
 #docker container kill $(docker container ls -a -q); docker rm $(docker container ls -a -q); docker rmi $(docker images -q)
 
-version: '3.7'
+version: '3.6'
 
 services:
   femr-app:
     container_name: femr-app
     build:
       context: ./femrApp
+      args:
+        FEMR_APP_VERSION: ${FEMR_APP_VERSION}
+        FEMR_APP_SBT_VERSION: ${FEMR_APP_SBT_VERSION}
+        FEMR_APP_SCALA_VERSION: ${FEMR_APP_SCALA_VERSION}
+        FEMR_SUPERUSER_USERNAME: ${FEMR_SUPERUSER_USERNAME}
+        FEMR_SUPERUSER_PASSWORD: ${FEMR_SUPERUSER_PASSWORD}
+        FEMR_ADMIN_USERNAME: ${FEMR_ADMIN_USERNAME}
+        FEMR_ADMIN_PASSWORD: ${FEMR_ADMIN_PASSWORD}
+        FEMR_SECRET_KEY: ${FEMR_SECRET_KEY}
+        FEMR_DB_CONNECTION_STRING: ${FEMR_DB_CONNECTION_STRING}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - 9000:9000
     env_file:

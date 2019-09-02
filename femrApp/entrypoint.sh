@@ -1,20 +1,12 @@
+#!/bin/bash
 #Make sure mysql is up
-while !</dev/tcp/db/3306;
-do sleep 1;
-done;
-
-echo "$FEMR_APP_VERSION\n\n\n"
+# while !</dev/tcp/db/3306;
+# do sleep 1;
+# done;
 
 #actually run the app
-iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to 8081
 
-FILE=/home/kevin/fEMR/femr-2.2/RUNNING_PID
-
-if [ -f $FILE ]
-	then
-		rm $FILE
-fi
-
-/opt/femr/femr-2.4.0/bin/femr -Dconfig.file=/opt/femr/femr-2.4.0/prod.conf -Dlogger.file=/opt/femr/femr-2.4.0/conf/prod-logger.xml -Duser.home=/home/femr &
+echo "ABOUT TO RUN FEMR"
+/femr/target/universal/femr-"$FEMR_APP_VERSION"/bin/femr "-Dconfig.file=/femr/target/universal/femr-$FEMR_APP_VERSION/prod.conf" "-Dlogger.file=/femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod-logger.xml" "-Duser.home=/femr/target/universal/femr-$FEMR_APP_VERSION"
 
 exit 0

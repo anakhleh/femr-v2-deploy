@@ -1,6 +1,18 @@
-
 #####Get ubuntu environment
 FROM ubuntu:16.04
+
+#Define what args we want to use from the docker-compose
+ARG FEMR_APP_VERSION
+ARG FEMR_APP_SBT_VERSION
+ARG FEMR_APP_SCALA_VERSION
+ARG FEMR_SUPERUSER_USERNAME
+ARG FEMR_SUPERUSER_PASSWORD
+ARG FEMR_ADMIN_USERNAME
+ARG FEMR_ADMIN_PASSWORD
+ARG FEMR_SECRET_KEY
+ARG FEMR_DB_CONNECTION_STRING
+ARG MYSQL_USER
+ARG MYSQL_PASSWORD
 
 #####Some settings so that python reads text as UTF-8. Reading as ASCII Causes Issues
 ENV LC_ALL=C.UTF-8
@@ -11,29 +23,91 @@ USER root
 WORKDIR /
 
 ##### Get the needed programs to set up fEMR environment #####
-RUN apt-get update \
-    && apt-get -y install software-properties-common git unzip curl \
-    && apt-get -y install openjdk-8-jdk \
-    && mkdir -p /home/femr/Git \
-    && git clone https://github.com/FEMR/femr /home/femr/Git/ \
-    && export FEMR_APP_VERSION=$(awk '/val appVersion/{print}' /home/femr/Git/femr/Build.sbt | awk 'NF>1{print $NF}' | sed 's/\"//g') \
-    && echo $(awk '/val appVersion/{print}' /home/femr/Git/femr/Build.sbt) \
-    && echo $(awk '/val appVersion/{print}' /home/femr/Git/femr/Build.sbt | awk 'NF>1{print $NF}') \
-    && echo "FEMR_APP_VERSION IS $FEMR_APP_VERSION" \
-    && export SBT_VERSION=$(awk '/sbt.version=/{print}' /home/femr/Git/femr/project/build.properties | cut -d "=" -f 2 ) \
-    && echo $(awk '/sbt.version=/{print}' /home/femr/Git/femr/project/build.properties) \
-    && echo "SBT_VERSION IS $SBT_VERSION" \
-    && export SCALA_VERSION=$(awk '/val currentScalaVersion/{print}' /home/femr/Git/femr/Build.sbt | awk 'NF>1{print $NF}' | sed 's/\"//g') \
-    && echo "SCALA_VERSION IS $SCANA_VERSION" \
-    && curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb \
-    && dpkg -i sbt-$SBT_VERSION.deb \
-    && rm sbt-$SBT_VERSION.deb \
-    && apt-get update \
-    && apt-get install sbt \
-    && sbt sbtVersion \
-    && sbt clean compile dist /home/femr/Git/femr \
-    && mkdir -p /opt/femr \
-    && mv "/home/femr/Git/femr/target/universal/femr-$FEMR_APP_VERSION.zip" "/opt/femr/femr-$FEMR_APP_VERSION.zip"
+RUN apt-get update
+# RUN  apt-get -y install software-properties-common git unzip curl
+RUN apt-get -y install git software-properties-common unzip curl openjdk-8-jdk 
+RUN echo $FEMR_APP_SBT_VERSION
+RUN \
+  curl -L -o "sbt-$FEMR_APP_SBT_VERSION.deb" "https://dl.bintray.com/sbt/debian/sbt-$FEMR_APP_SBT_VERSION.deb" && \
+  dpkg -i "sbt-$FEMR_APP_SBT_VERSION.deb" && \
+  rm "sbt-$FEMR_APP_SBT_VERSION.deb" && \
+  apt-get update && \
+  apt-get install sbt && \
+  sbt sbtVersion
+
+RUN git clone https://github.com/FEMR/femr
+
+WORKDIR femr
+RUN sbt clean compile dist
+RUN ls .
+
+WORKDIR /
+RUN unzip "femr/target/universal/femr-$FEMR_APP_VERSION.zip" -d "femr/target/universal/"
+RUN mkdir -p "femr/target/universal/femr-$FEMR_APP_VERSION/public/img"
+RUN ls "femr/target/universal/femr-$FEMR_APP_VERSION/"
+
+#Set Superuser Credentials
+RUN sed -i "/default\.superuser\.username=.*/c\default\.superuser\.username=\"${FEMR_SUPERUSER_USERNAME}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+RUN sed -i "/default\.superuser\.password=.*/c\default\.superuser\.password=\"${FEMR_SUPERUSER_PASSWORD}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+
+#Set Default Admin Credentials
+RUN sed -i "/default\.admin\.username=.*/c\default\.admin\.username=\"${FEMR_ADMIN_USERNAME}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+RUN sed -i "/default\.admin\.password=.*/c\default\.admin\.password=\"${FEMR_ADMIN_PASSWORD}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+
+#Set DB connection info
+RUN sed -i "/db\.default\.username=.*/c\db\.default\.username=\"${MYSQL_USER}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+RUN sed -i "/db\.default\.password=.*/c\db\.default\.password=\"${MYSQL_PASSWORD}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+RUN sed -i "/db\.default\.url=.*/c\db\.default\.url=\"${FEMR_DB_CONNECTION_STRING}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+
+#Set Application Secret
+RUN sed -i "/play\.http\.secret\.key=.*/c\play\.http\.secret\.key=\"${FEMR_SECRET_KEY}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+
+#This will not support the internet connection functionality. Just make sure just in case it is set to yes
+RUN sed -i "/internetconnection.enableInternetConnectivityFunctionality.*/c\internetconnection.enableInternetConnectivityFunctionality = \"false\"" femr/conf/application.conf
+
+RUN cat femr/conf/application.conf
+
+RUN mv "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod.conf"
+
+# COPY /docker_setup [ "/bin/bash", "./entrypoint.sh" ]
+
+# #For development purposes, check the config files
+# RUN cat femr/conf/application.conf
+
+
+
+
+
+# RUN git clone https://github.com/FEMR/femr
+# WORKDIR /femr
+
+# RUN git clone https://github.com/FEMR/femr
+# WORKDIR /femr
+# ENV FEMR_APP_VERSION "$(grep 'appVersion' Build.sbt)"
+# RUN echo "APP VERSION IS $FEMR_APP_VERSION"
+# RUN apt-get update \
+#     && apt-get -y install software-properties-common git unzip curl \
+#     && apt-get -y install openjdk-8-jdk \
+#     && mkdir -p /home/femr/Git \
+#     && git clone https://github.com/FEMR/femr /home/femr/Git/ \
+#     && export FEMR_APP_VERSION=$(awk '/val appVersion/{print}' /home/femr/Git/femr/Build.sbt | awk 'NF>1{print $NF}' | sed 's/\"//g') \
+#     && echo $(awk '/val appVersion/{print}' /home/femr/Git/femr/Build.sbt) \
+#     && echo $(awk '/val appVersion/{print}' /home/femr/Git/femr/Build.sbt | awk 'NF>1{print $NF}') \
+#     && echo "FEMR_APP_VERSION IS $FEMR_APP_VERSION" \
+#     && export SBT_VERSION=$(awk '/sbt.version=/{print}' /home/femr/Git/femr/project/build.properties |  ) \
+#     && echo $(awk '/sbt.version=/{print}' /home/femr/Git/femr/project/build.properties) \
+#     && echo "SBT_VERSION IS $SBT_VERSION" \
+#     && export SCALA_VERSION=$(awk '/val currentScalaVersion/{print}' /home/femr/Git/femr/Build.sbt | awk 'NF>1{print $NF}' | sed 's/\"//g') \
+#     && echo "SCALA_VERSION IS $SCANA_VERSION" \
+#     && curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb \
+#     && dpkg -i sbt-$SBT_VERSION.deb \
+#     && rm sbt-$SBT_VERSION.deb \
+#     && apt-get update \
+#     && apt-get install sbt \
+#     && sbt sbtVersion \
+#     && sbt clean compile dist /home/femr/Git/femr \
+#     && mkdir -p /opt/femr \
+#     && mv "/home/femr/Git/femr/target/universal/femr-$FEMR_APP_VERSION.zip" "/opt/femr/femr-$FEMR_APP_VERSION.zip"
 
 #the first one gets you `add-apt-repository`
 
@@ -108,6 +182,7 @@ RUN apt-get update \
 # #Set database default password
 # RUN sed "s/^db.default.password=.*/db.default.password=\"$MYSQL_PASSWORD\""
 
+COPY . /docker_setup
 
 # #Run femr
-# ENTRYPOINT ["/bin/bash", "./entrypoint.sh"]
+ENTRYPOINT [ "/bin/bash", "/docker_setup/wait-for-it.sh", "db:3306", "--", "/docker_setup/entrypoint.sh"]
