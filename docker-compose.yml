@@ -6,24 +6,23 @@
 version: '3.7'
 
 services:
-  femrApp:
-    container_name: femrApp
+  femr-app:
+    container_name: femr-app
     build:
-      context: femrApp
+      context: ./femrApp
     ports:
       - 9000:9000
     env_file:
       - ./env
+    volumes:
+      - ./appData:/opt/femr
   db:
     container_name: db
-    build:
-      context: db
+    image: mysql:5.7.27
     env_file:
       - ./env
     volumes:
-      - dbData
-volumes:
-  dbData:
-    - ./dbdata:/var/lib/mysql
-  appData:
-    - ./appData:/opt/femr
+      - ./dbData:/var/lib/mysql
+# volumes:
+#   dbData:
+#   appData:
