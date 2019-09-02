@@ -1,0 +1,29 @@
+#docker container kill $(docker container ls -a -q)
+#docker rm $(docker container ls -a -q)
+#docker rmi $(docker images -q)
+#docker container kill $(docker container ls -a -q); docker rm $(docker container ls -a -q); docker rmi $(docker images -q)
+
+version: '3.7'
+
+services:
+  femrApp:
+    container_name: femrApp
+    build:
+      context: femrApp
+    ports:
+      - 9000:9000
+    env_file:
+      - ./env
+  db:
+    container_name: db
+    build:
+      context: db
+    env_file:
+      - ./env
+    volumes:
+      - dbData
+volumes:
+  dbData:
+    - ./dbdata:/var/lib/mysql
+  appData:
+    - ./appData:/opt/femr
