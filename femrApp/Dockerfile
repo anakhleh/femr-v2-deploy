@@ -59,15 +59,21 @@ RUN sed -i "/db\.default\.username=.*/c\db\.default\.username=\"${MYSQL_USER}\""
 RUN sed -i "/db\.default\.password=.*/c\db\.default\.password=\"${MYSQL_PASSWORD}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
 RUN sed -i "/db\.default\.url=.*/c\db\.default\.url=\"${FEMR_DB_CONNECTION_STRING}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
 
-#Set Application Secret
+#Set Application Secret. Note, the build process removes it from the file
+RUN ls
+RUN echo "\n\nplay.http.secret.key=\"${FEMR_SECRET_KEY}\"" >> "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+RUN echo "play.evolutions.db.default.autoApply=true" >> "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
 # RUN sed -i "/play\.http\.secret\.key=.*/c\play\.http\.secret\.key=\"${FEMR_SECRET_KEY}\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
 
-#This will not support the internet connection functionality. Just make sure just in case it is set to yes
-RUN sed -i "/internetconnection.enableInternetConnectivityFunctionality.*/c\internetconnection.enableInternetConnectivityFunctionality = \"false\"" femr/conf/application.conf
 
-RUN cat femr/conf/application.conf
+#This will not support the internet connection functionality. Just make sure just in case it is set to yes
+RUN sed -i "/internetconnection.enableInternetConnectivityFunctionality.*/c\internetconnection.enableInternetConnectivityFunctionality = \"false\"" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
+
+RUN cat "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf"
 
 RUN mv "femr/target/universal/femr-$FEMR_APP_VERSION/conf/application.conf" "femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod.conf"
+
+RUN cat "femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod.conf"
 
 # COPY /docker_setup [ "/bin/bash", "./entrypoint.sh" ]
 

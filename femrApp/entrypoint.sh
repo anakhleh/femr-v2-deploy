@@ -5,12 +5,18 @@
 # done;
 
 #actually run the app
+FILE=/femr/target/universal/femr-$FEMR_APP_VERSION/RUNNING_PID
 
-echo "ABOUT TO RUN FEMR"
+if [ -f $FILE ]
+	then
+		rm $FILE
+fi
+
+echo "ABOUT TO RUN FEMR: TRY 2";
+
 /femr/target/universal/femr-"$FEMR_APP_VERSION"/bin/femr \
-"-Dconfig.file=/femr/target/universal/femr-$FEMR_APP_VERSION/prod.conf" \
+"-Dconfig.file=/femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod.conf" \
 "-Dlogger.file=/femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod-logger.xml" \
-"-Duser.home=/femr/target/universal/femr-$FEMR_APP_VERSION" \
-"-Dplay.http.secret.key=$FEMR_APP_SECRET_KEY"
+"-Duser.home=/femr/target/universal/femr-$FEMR_APP_VERSION" 
 
 exit 0
