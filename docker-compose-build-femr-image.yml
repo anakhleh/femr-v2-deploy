@@ -1,3 +1,6 @@
+#this is here exclusively to build a docker image for femr
+
+#Usefull commands for tearing down docker containers and images
 #docker container kill $(docker container ls -a -q)
 #docker rm $(docker container ls -a -q)
 #docker rmi $(docker images -q)
@@ -29,13 +32,3 @@ services:
     volumes:
       - ./appData:/opt/femr
     stdin_open: true
-  db:
-    container_name: db
-    image: mysql:5.7.27
-    env_file:
-      - ./env
-    volumes:
-      - ./dbData:/var/lib/mysql
-# volumes:
-#   dbData:
-#   appData:

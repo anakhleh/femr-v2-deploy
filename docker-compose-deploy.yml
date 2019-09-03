@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  femr-app:
+    image: femr-v2-deploy_femr-app:latest
+    ports:
+      - 9000:9000
+    volumes:
+      - ./appData:/femr
+      - femrVolume
+    stdin_open: true
+    env_file: env
+  db:
+    image: mysql:5.7.27
+    env_file: env
+    volumes:
+    - ./dbData:/var/lib/mysql
+    - dbVolume
+volumes:
+  femrVolume:
+  dbVolume:
