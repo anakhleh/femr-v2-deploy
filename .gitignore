@@ -1,3 +1,5 @@
 env
 .env
 femr_version_env_vars.tmp
+dockerImages/*.tar
+dokerImages/*.tar.gz

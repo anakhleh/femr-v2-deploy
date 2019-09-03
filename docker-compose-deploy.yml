@@ -7,7 +7,7 @@ services:
       - 9000:9000
     volumes:
       - ./appData:/femr
-      - femrVolume
+      # - femrVolume
     stdin_open: true
     env_file: env
   db:
@@ -15,7 +15,7 @@ services:
     env_file: env
     volumes:
     - ./dbData:/var/lib/mysql
-    - dbVolume
-volumes:
-  femrVolume:
-  dbVolume:
+    # - dbVolume
+# volumes:
+#   femrVolume:
+#   dbVolume:

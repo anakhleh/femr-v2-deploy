@@ -2,7 +2,8 @@
 Dockerization and OS Images for faster and easier deployment of Femr v2.x.x
 
 #Dependencies to run 
-Docker (should come with `docker-compose` cli tool), Python 3+ (I ran it on 3.7.2, but I think it will run at least on 3.2+), bash (or at least some way to run bash scripts and curl from bash)
+Docker (should come with `docker-compose` cli tool), Python 3+ (I ran it on 3.7.2, but I think it will run at least on 3.2+), bash (or at least some way to run bash scripts and curl from bash).
+Note: this is meant to be run on Ubuntu Server 18.04 LTS
 
 #Usage
 `bash set_up_docker_env_file.sh`
