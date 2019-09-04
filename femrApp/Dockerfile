@@ -35,7 +35,10 @@ RUN \
   apt-get install sbt && \
   sbt sbtVersion
 
-RUN git clone https://github.com/FEMR/femr
+# Assumes femr will be cloned into this folder
+COPY femr /femr
+COPY ./entrypoint.sh /docker_setup/entrypoint.sh
+COPY ./wait-for-it.sh /docker_setup/wait-for-it.sh
 
 WORKDIR femr
 RUN sbt clean compile dist
@@ -79,7 +82,6 @@ RUN ls "femr/target/universal/femr-$FEMR_APP_VERSION"
 
 RUN ls "femr/target/universal/femr-$FEMR_APP_VERSION/bin/"
 
-COPY . /docker_setup
 
 #Run femr
-CMD [ "/bin/bash", "/docker_setup/wait-for-it.sh", "db:3306", "--", "/docker_setup/entrypoint.sh" ]
+ENTRYPOINT /bin/bash /docker_setup/wait-for-it.sh db:3306 -- "/femr/target/universal/femr-$FEMR_APP_VERSION/bin/femr" "-Dconfig.file=/femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod.conf" "-Dlogger.file=/femr/target/universal/femr-$FEMR_APP_VERSION/conf/prod-logger.xml" "-Duser.home=/femr/target/universal/femr-$FEMR_APP_VERSION"

@@ -14,10 +14,15 @@ echo '[i] -     Getting Ubuntu Docker Image'
 curl -L 'https://www.dropbox.com/s/2k5kgsxhxxpq7j7/ubuntu.16.04.tar?dl=1' --output dockerImages/ubuntu.16.04.tar
 docker load -i dockerImages/ubuntu.16.04.tar
 
+
 #create local docker image for femr
+git clone https://github.com/FEMR/femr femrApp/femr
+
 echo '[i] -     Building fEMR Docker Image'
 docker-compose -f docker-compose-build-femr-image.yml build --force-rm
 docker save femr-v2-deploy_femr-app:latest > ./dockerImages/femr-app.tar
+
+rm -rf femrApp/femr
 
 #get mysql image tar from external source. Don't pull from docker because
 #then we'd have to have a docker-hub account for this step.
